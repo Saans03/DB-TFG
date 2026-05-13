@@ -73,7 +73,8 @@
                 <th>Posición</th>
                 <th>Jugador</th>
                 <th>Puntuación</th>
-                <th>Monedas</th> </tr>
+                <th>Monedas</th> 
+            </tr>
         </thead>
         <tbody id="tabla-puntuaciones">
             <tr><td colspan="4">Conectando con la base de datos...</td></tr>
@@ -83,8 +84,8 @@
     <script>
         async function cargarRanking() {
             try {
-                // Pedimos los datos al servidor
-                const respuesta = await fetch('http://localhost:3000/scores');
+                // 👇 AQUÍ ESTÁ EL CAMBIO. AHORA APUNTA A TU NUBE DE RENDER 👇
+                const respuesta = await fetch('https://db-tfg.onrender.com/scores');
                 const puntuaciones = await respuesta.json();
 
                 const cuerpoTabla = document.getElementById('tabla-puntuaciones');
@@ -97,7 +98,7 @@
                     if (indice === 1) claseMedalla = 'silver';  
                     if (indice === 2) claseMedalla = 'bronze';  
 
-                    // 2. LEEMOS LA VARIABLE 'monedas' (O ponemos 0 si no existe)
+                    // LEEMOS LA VARIABLE 'monedas' (O ponemos 0 si no existe)
                     const numMonedas = partida.monedas || 0;
 
                     const fila = `
