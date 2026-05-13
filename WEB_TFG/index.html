@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking Top 10 - TFG</title>
+    <style>
+        /* Estilos generales (Dark Mode) */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e2e;
+            color: #cdd6f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        h1 { 
+            color: #89b4fa; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 30px;
+        }
+        
+        /* Estilos de la tabla */
+        table {
+            background-color: #313244;
+            border-radius: 10px;
+            overflow: hidden;
+            width: 650px; /* Un poco más ancha para las monedas */
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border-collapse: collapse;
+        }
+        th {
+            background-color: #89b4fa;
+            color: #1e1e2e;
+            padding: 15px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #45475a;
+        }
+        tr:last-child td { 
+            border-bottom: none; 
+        }
+
+        /* Efecto al pasar el ratón */
+        tr:hover {
+            background-color: #45475a;
+            transition: 0.3s;
+        }
+
+        /* Colores para el Top 3 */
+        .gold { color: #f9e2af; font-weight: bold; font-size: 1.2em; }
+        .silver { color: #bac2de; font-weight: bold; font-size: 1.1em; }
+        .bronze { color: #fab387; font-weight: bold; font-size: 1.05em; }
+
+        .coin-icon {
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🏆 TOP 10 MEJORES JUGADORES 🏆</h1>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Posición</th>
+                <th>Jugador</th>
+                <th>Puntuación</th>
+                <th>Monedas</th> </tr>
+        </thead>
+        <tbody id="tabla-puntuaciones">
+            <tr><td colspan="4">Conectando con la base de datos...</td></tr>
+        </tbody>
+    </table>
+
+    <script>
+        async function cargarRanking() {
+            try {
+                // Pedimos los datos al servidor
+                const respuesta = await fetch('http://localhost:3000/scores');
+                const puntuaciones = await respuesta.json();
+
+                const cuerpoTabla = document.getElementById('tabla-puntuaciones');
+                cuerpoTabla.innerHTML = ''; 
+
+                puntuaciones.forEach((partida, indice) => {
+                    let claseMedalla = '';
+                    
+                    if (indice === 0) claseMedalla = 'gold';    
+                    if (indice === 1) claseMedalla = 'silver';  
+                    if (indice === 2) claseMedalla = 'bronze';  
+
+                    // 2. LEEMOS LA VARIABLE 'monedas' (O ponemos 0 si no existe)
+                    const numMonedas = partida.monedas || 0;
+
+                    const fila = `
+                        <tr class="${claseMedalla}">
+                            <td>#${indice + 1}</td>
+                            <td>${partida.playerName}</td>
+                            <td>${partida.score} <small>PT</small></td>
+                            <td>${numMonedas} <span class="coin-icon">🪙</span></td>
+                        </tr>
+                    `;
+                    cuerpoTabla.innerHTML += fila;
+                });
+
+            } catch (error) {
+                console.error("Error al cargar el ranking:", error);
+                document.getElementById('tabla-puntuaciones').innerHTML = 
+                    '<tr><td colspan="4" style="color: #f38ba8;">❌ Error al conectar con el servidor.</td></tr>';
+            }
+        }
+
+        // Carga inicial y refresco cada 3 segundos
+        cargarRanking();
+        setInterval(cargarRanking, 3000);
+    </script>
+</body>
+</html>
