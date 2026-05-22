@@ -47,11 +47,12 @@ app.get('/scores', async (req, res) => {
 // RUTA POST (Escribir): Es la puerta que usa Unity para guardar una nueva partida
 app.post('/scores', async (req, res) => {
     try {
-        // Construimos el nuevo dato usando el molde (AHORA CON MONEDAS)
+        // Construimos el nuevo dato (AHORA CON MONEDAS Y NIVEL MÁXIMO)
         const newScore = new Score({
             playerName: req.body.playerName,
             score: req.body.score,
-            monedas: req.body.monedas || 0 // <-- Aquí recogemos las monedas
+            monedas: req.body.monedas || 0,
+            nivelMaximo: req.body.nivelMaximo || "Ninguno" // <-- NUEVO: Recogemos el nivel
         });
         
         // Lo guardamos definitivamente en MongoDB
@@ -59,7 +60,7 @@ app.post('/scores', async (req, res) => {
         
         // Respondemos a Unity con un código 201 (Creado con éxito)
         res.status(201).json(savedScore); 
-        console.log(`✨ ¡Nueva puntuación guardada!: ${savedScore.playerName} - ${savedScore.score} PT - ${savedScore.monedas} Monedas`);
+        console.log(`✨ ¡Guardado!: ${savedScore.playerName} - ${savedScore.score} PT - ${savedScore.monedas} Monedas - ${savedScore.nivelMaximo}`);
     } catch (error) {
         console.error('🔴 Error al guardar desde Unity:', error);
         res.status(500).json({ error: 'Error al guardar la puntuación' });

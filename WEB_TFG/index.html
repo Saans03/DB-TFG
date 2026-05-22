@@ -26,7 +26,7 @@
             background-color: #313244;
             border-radius: 10px;
             overflow: hidden;
-            width: 650px; /* Un poco más ancha para las monedas */
+            width: 750px; /* Ampliada un poco más para que quepa todo bien */
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             border-collapse: collapse;
@@ -74,17 +74,16 @@
                 <th>Jugador</th>
                 <th>Puntuación</th>
                 <th>Monedas</th> 
-            </tr>
+                <th>Nivel Máx.</th> </tr>
         </thead>
         <tbody id="tabla-puntuaciones">
-            <tr><td colspan="4">Conectando con la base de datos...</td></tr>
+            <tr><td colspan="5">Conectando con la base de datos...</td></tr>
         </tbody>
     </table>
 
     <script>
         async function cargarRanking() {
             try {
-                // 👇 AQUÍ ESTÁ EL CAMBIO. AHORA APUNTA A TU NUBE DE RENDER 👇
                 const respuesta = await fetch('https://db-tfg.onrender.com/scores');
                 const puntuaciones = await respuesta.json();
 
@@ -98,8 +97,9 @@
                     if (indice === 1) claseMedalla = 'silver';  
                     if (indice === 2) claseMedalla = 'bronze';  
 
-                    // LEEMOS LA VARIABLE 'monedas' (O ponemos 0 si no existe)
+                    // Leemos las variables controlando que si no existen no rompan la web
                     const numMonedas = partida.monedas || 0;
+                    const maxNivel = partida.nivelMaximo || 'Ninguno'; 
 
                     const fila = `
                         <tr class="${claseMedalla}">
@@ -107,6 +107,7 @@
                             <td>${partida.playerName}</td>
                             <td>${partida.score} <small>PT</small></td>
                             <td>${numMonedas} <span class="coin-icon">🪙</span></td>
+                            <td><strong>${maxNivel}</strong></td>
                         </tr>
                     `;
                     cuerpoTabla.innerHTML += fila;
@@ -115,7 +116,7 @@
             } catch (error) {
                 console.error("Error al cargar el ranking:", error);
                 document.getElementById('tabla-puntuaciones').innerHTML = 
-                    '<tr><td colspan="4" style="color: #f38ba8;">❌ Error al conectar con el servidor.</td></tr>';
+                    '<tr><td colspan="5" style="color: #f38ba8;">❌ Error al conectar con el servidor.</td></tr>';
             }
         }
 
