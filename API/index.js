@@ -1,73 +1,50 @@
-// 1. IMPORTACIONES
-require('dotenv').config(); 
-const express = require('express'); 
-const mongoose = require('mongoose'); 
-const cors = require('cors'); 
-const dns = require('node:dns'); 
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const Score = require('./models/Score'); // Asegúrate de que la ruta a tu modelo sea idéntica
 
-// 📦 IMPORTAMOS TU MOLDE (Asegúrate de tener la carpeta models y Score.js dentro)
-const Score = require('./models/Score');
-
-// 2. EL PARCHE PARA EL BUG DE WINDOWS (Para saltarnos el bloqueo del router)
-dns.setServers(['1.1.1.1', '8.8.8.8']); 
-
-// 3. CONFIGURACIÓN INICIAL
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// 4. MIDDLEWARES (Los porteros)
-app.use(cors()); 
-app.use(express.json()); 
+// Middlewares esenciales
+app.use(cors());
+app.use(express.json());
 
-// 5. CONEXIÓN A LA BASE DE DATOS
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => {
-        console.log('🟢 ¡Conectado a la Base de Datos (MongoDB)!');
-    })
-    .catch((error) => {
-        console.log('🔴 Error al conectar a MongoDB:', error.message);
-    });
-
-// ==========================================
-// 6. RUTAS DE LA API (El corazón de tu servidor)
-// ==========================================
-
-// RUTA GET (Leer): Es la que usa tu página HTML para mostrar el Top 10
+// 📌 RUTA GET: Para leer las puntuaciones de MongoDB y enviárselas a la web
 app.get('/scores', async (req, res) => {
     try {
-        // Busca en la BD, ordena por puntuación de mayor a menor (-1) y coge las 10 primeras
+        // Buscamos los 10 mejores registros ordenados de mayor a menor puntuación
         const topScores = await Score.find().sort({ score: -1 }).limit(10);
-        res.json(topScores);
+        res.status(200).json(topScores);
     } catch (error) {
-        console.error('🔴 Error al enviar el ranking:', error);
+        console.error('🔴 Error al obtener puntuaciones del ranking:', error);
         res.status(500).json({ error: 'Error al obtener las puntuaciones' });
     }
 });
 
-// RUTA POST (Escribir): Es la puerta que usa Unity para guardar una nueva partida
+// 📌 RUTA POST: La entrada que usa Unity al cruzar la meta para guardar datos
 app.post('/scores', async (req, res) => {
     try {
-        // Construimos el nuevo dato (AHORA CON MONEDAS Y NIVEL MÁXIMO)
+        // Construimos el documento con la estructura completa incluyendo monedas y nivel máximo
         const newScore = new Score({
             playerName: req.body.playerName,
             score: req.body.score,
             monedas: req.body.monedas || 0,
-            nivelMaximo: req.body.nivelMaximo || "Ninguno" // <-- NUEVO: Recogemos el nivel
+            nivelMaximo: req.body.nivelMaximo || "Ninguno" // Evita campos vacíos si viene de versiones viejas
         });
         
-        // Lo guardamos definitivamente en MongoDB
+        // Guardamos de forma asíncrona en la base de datos de MongoDB Atlas
         const savedScore = await newScore.save();
         
-        // Respondemos a Unity con un código 201 (Creado con éxito)
+        console.log(`✨ ¡Registro guardado!: ${savedScore.playerName} | ${savedScore.score} PT | ${savedScore.monedas} Monedas | Nivel: ${savedScore.nivelMaximo}`);
         res.status(201).json(savedScore); 
-        console.log(`✨ ¡Guardado!: ${savedScore.playerName} - ${savedScore.score} PT - ${savedScore.monedas} Monedas - ${savedScore.nivelMaximo}`);
     } catch (error) {
-        console.error('🔴 Error al guardar desde Unity:', error);
+        console.error('🔴 Error crítico al guardar la puntuación desde Unity:', error);
         res.status(500).json({ error: 'Error al guardar la puntuación' });
     }
 });
 
-// 7. ENCENDER EL SERVIDOR
+// Configuración y encendido del puerto del servidor remoto
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`📡 Servidor escuchando en el puerto ${PORT}`);
+    console.log(`🚀 Servidor backend escuchando activamente en el puerto ${PORT}`);
 });

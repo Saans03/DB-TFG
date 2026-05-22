@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ranking Top 10 - TFG</title>
     <style>
-        /* Estilos generales (Dark Mode) */
+        /* Paleta Estilo Dark Mode */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #1e1e2e;
@@ -21,12 +21,12 @@
             margin-bottom: 30px;
         }
         
-        /* Estilos de la tabla */
+        /* Contenedor de la Tabla */
         table {
             background-color: #313244;
             border-radius: 10px;
             overflow: hidden;
-            width: 750px; /* Ampliada un poco más para que quepa todo bien */
+            width: 760px; /* Ancho optimizado para albergar las 5 columnas cómodamente */
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             border-collapse: collapse;
@@ -45,14 +45,12 @@
         tr:last-child td { 
             border-bottom: none; 
         }
-
-        /* Efecto al pasar el ratón */
         tr:hover {
             background-color: #45475a;
             transition: 0.3s;
         }
 
-        /* Colores para el Top 3 */
+        /* Marcadores del Podio */
         .gold { color: #f9e2af; font-weight: bold; font-size: 1.2em; }
         .silver { color: #bac2de; font-weight: bold; font-size: 1.1em; }
         .bronze { color: #fab387; font-weight: bold; font-size: 1.05em; }
@@ -74,7 +72,8 @@
                 <th>Jugador</th>
                 <th>Puntuación</th>
                 <th>Monedas</th> 
-                <th>Nivel Máx.</th> </tr>
+                <th>Nivel Máx.</th>
+            </tr>
         </thead>
         <tbody id="tabla-puntuaciones">
             <tr><td colspan="5">Conectando con la base de datos...</td></tr>
@@ -85,27 +84,38 @@
         async function cargarRanking() {
             try {
                 const respuesta = await fetch('https://db-tfg.onrender.com/scores');
-                const puntuaciones = await respuesta.json();
+                
+                // Si la respuesta de Render no es correcta, forzamos la caída al catch
+                if (!respuesta.ok) {
+                    throw new Error(`Error de servidor: ${respuesta.status}`);
+                }
 
+                const puntuaciones = await respuesta.json();
                 const cuerpoTabla = document.getElementById('tabla-puntuaciones');
                 cuerpoTabla.innerHTML = ''; 
 
+                // Si la base de datos está vacía, avisamos al usuario de forma limpia
+                if (puntuaciones.length === 0) {
+                    cuerpoTabla.innerHTML = '<tr><td colspan="5">No hay puntuaciones registradas en este momento.</td></tr>';
+                    return;
+                }
+
+                // Recorremos los datos para montar las filas
                 puntuaciones.forEach((partida, indice) => {
                     let claseMedalla = '';
-                    
                     if (indice === 0) claseMedalla = 'gold';    
                     if (indice === 1) claseMedalla = 'silver';  
                     if (indice === 2) claseMedalla = 'bronze';  
 
-                    // Leemos las variables controlando que si no existen no rompan la web
-                    const numMonedas = partida.monedas || 0;
+                    // Validaciones de seguridad en caso de campos inexistentes
+                    const numMonedas = partida.monedas !== undefined ? partida.monedas : 0;
                     const maxNivel = partida.nivelMaximo || 'Ninguno'; 
 
                     const fila = `
                         <tr class="${claseMedalla}">
                             <td>#${indice + 1}</td>
-                            <td>${partida.playerName}</td>
-                            <td>${partida.score} <small>PT</small></td>
+                            <td>${partida.playerName || 'Anónimo'}</td>
+                            <td>${partida.score || 0} <small>PT</small></td>
                             <td>${numMonedas} <span class="coin-icon">🪙</span></td>
                             <td><strong>${maxNivel}</strong></td>
                         </tr>
@@ -115,12 +125,13 @@
 
             } catch (error) {
                 console.error("Error al cargar el ranking:", error);
+                // Si falla el fetch de Render, se muestra este mensaje ocupando las 5 columnas
                 document.getElementById('tabla-puntuaciones').innerHTML = 
-                    '<tr><td colspan="5" style="color: #f38ba8;">❌ Error al conectar con el servidor.</td></tr>';
+                    '<tr><td colspan="5" style="color: #f38ba8; font-weight: bold; padding: 20px;">❌ Error al conectar con el servidor.</td></tr>';
             }
         }
 
-        // Carga inicial y refresco cada 3 segundos
+        // Ejecución inicial y temporizador automático en segundo plano cada 3 segundos
         cargarRanking();
         setInterval(cargarRanking, 3000);
     </script>
