@@ -16,17 +16,26 @@ mongoose.connect(MONGO_URI)
 app.use(cors());
 app.use(express.json());
 
-// 📌 RUTA GET: Para leer las puntuaciones de MongoDB y enviárselas a la web
+// 📌 RUTA GET: Ahora filtra por nivel
 app.get('/scores', async (req, res) => {
     try {
-        // Buscamos los 10 mejores registros ordenados de mayor a menor puntuación
-        const topScores = await Score.find().sort({ score: -1 }).limit(10);
+        const nivelSolicitado = req.query.nivel; 
+        let filtro = {}; // Por defecto, si no hay filtro, buscamos todo (o puedes poner filtro = {nivel: "nivel1"} para que sea el default)
+
+        // Si recibimos el parámetro "nivel" desde la web/unity, aplicamos el filtro
+        if (nivelSolicitado) {
+            filtro = { nivel: nivelSolicitado };
+        }
+
+        // Aquí es donde ocurre la magia: buscamos usando el filtro
+        const topScores = await Score.find(filtro).sort({ score: -1 }).limit(10);
+        
         res.status(200).json(topScores);
     } catch (error) {
         console.error('🔴 Error al obtener puntuaciones del ranking:', error);
         res.status(500).json({ error: 'Error al obtener las puntuaciones' });
     }
-});
+})
 
 // 📌 RUTA POST: La entrada que usa Unity al cruzar la meta para guardar datos
 app.post('/scores', async (req, res) => {
