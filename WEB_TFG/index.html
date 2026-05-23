@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ranking Top 10 - TFG</title>
+    <title>Ranking General-The Timekeeper's Journey</title>
     <style>
-        /* Paleta Estilo Dark Mode */
+        /* Paleta Estilo Dark / Steampunk minimalista */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #1e1e2e;
@@ -14,14 +14,73 @@
             flex-direction: column;
             align-items: center;
             margin-top: 50px;
+            min-height: 100vh;
         }
+        
         h1 { 
             color: #89b4fa; 
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            margin-bottom: 30px;
+            margin-bottom: 5px;
+            text-align: center;
         }
         
-        /* Contenedor de la Tabla */
+        h2 {
+            color: #f9e2af;
+            margin-bottom: 30px;
+            font-weight: 400;
+            text-align: center;
+        }
+
+        /* Contenedor del Lobby Inicial */
+        .lobby-container {
+            background-color: #313244;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            text-align: center;
+            width: 500px;
+        }
+
+        .lobby-container p {
+            color: #a6adc8;
+            margin-bottom: 25px;
+            font-size: 16px;
+        }
+
+        /* Grid de botones del menú */
+        .menu-niveles {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-lobby {
+            background-color: #45475a;
+            color: #cdd6f4;
+            border: 2px solid #585b70;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-lobby:hover {
+            background-color: #89b4fa;
+            color: #11111b;
+            border-color: #89b4fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(137, 180, 250, 0.3);
+        }
+
+        /* Pantalla del Ranking (Oculta al principio) */
+        .ranking-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
         table {
             background-color: #313244;
             border-radius: 10px;
@@ -30,7 +89,9 @@
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             border-collapse: collapse;
+            margin-bottom: 25px;
         }
+
         th {
             background-color: #45475a;
             color: #a6e3a1;
@@ -38,67 +99,94 @@
             font-size: 18px;
             border-bottom: 2px solid #585b70;
         }
+
         td {
             padding: 12px 15px;
             border-bottom: 1px solid #45475a;
             font-size: 16px;
         }
+
         tr:hover {
             background-color: #45475a;
+        }
+
+        /* Botón Volver */
+        .btn-volver {
+            background-color: #f38ba8;
+            color: #11111b;
+            border: none;
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
             transition: background 0.2s ease;
         }
+
+        .btn-volver:hover {
+            background-color: #eba0b2;
+        }
         
-        /* Estilos especiales para el Podio (Top 3) */
+        /* Podio */
         .gold { background-color: rgba(249, 226, 175, 0.1); color: #f9e2af; font-weight: bold; }
         .silver { background-color: rgba(180, 190, 244, 0.1); color: #b4befe; font-weight: bold; }
         .bronze { background-color: rgba(243, 139, 168, 0.1); color: #f38ba8; font-weight: bold; }
-        
-        .coin-icon {
-            margin-left: 5px;
-        }
+        .coin-icon { margin-left: 5px; }
     </style>
 </head>
 <body>
-    <h1>🏆 Ranking General - SteamPunk Game 🏆</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Puesto</th>
-                <th>Jugador</th>
-                <th>Puntuación</th>
-                <th>Monedas</th>
-                <th>Nivel</th>
-            </tr>
-        </thead>
-        <tbody id="tabla-puntuaciones">
-            </tbody>
-    </table>
+
+    <div id="lobby-screen" class="lobby-container">
+        <h1>Ranking General</h1>
+        <h2>The Timekeeper's Journey</h2>
+        <p>Selecciona una línea temporal para consultar el Top 10:</p>
+        <div class="menu-niveles">
+            <button class="btn-lobby" onclick="seleccionarNivel('nivel1', 'Nivel 1')">⌛ Nivel 1</button>
+            <button class="btn-lobby" onclick="seleccionarNivel('nivel2', 'Nivel 2')">⏳ Nivel 2</button>
+            <button class="btn-lobby" onclick="seleccionarNivel('nivel3', 'Nivel 3')">⚙️ Nivel 3</button>
+            <button class="btn-lobby" onclick="seleccionarNivel('nivel4', 'Nivel 4')">🚀 Nivel 4</button>
+            <button class="btn-lobby" onclick="seleccionarNivel('nivel5', 'Nivel 5')">🌌 Nivel 5</button>
+        </div>
+    </div>
+
+    <div id="ranking-screen" class="ranking-container">
+        <h1>🏆 Top 10 Puntuaciones 🏆</h1>
+        <h2 id="ranking-subtitle">Nivel Seleccionado</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Puesto</th>
+                    <th>Jugador</th>
+                    <th>Puntuación</th>
+                    <th>Monedas</th>
+                    <th>Nivel</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-puntuaciones">
+                </tbody>
+        </table>
+
+        <button class="btn-volver" onclick="regresarAlLobby()">↩ Volver al Lobby</button>
+    </div>
 
     <script>
-        async function cargarRanking() {
+        let nivelActivo = '';
+        let intervaloActual = null;
+
+        async function cargarDatosRanking() {
+            if (!nivelActivo) return;
+
             try {
-                // 1. Detectamos automáticamente si hay un nivel en la URL (ej: index.html?nivel=nivel1)
-                const urlParams = new URLSearchParams(window.location.search);
-                const nivelFiltro = urlParams.get('nivel'); 
-
-                // 2. Añadimos el filtro query string si existe
-                let urlFetch = 'https://db-tfg.onrender.com/scores';
-                if (nivelFiltro) {
-                    urlFetch += `?nivel=${nivelFiltro}`;
-                }
-
-                const respuesta = await fetch(urlFetch);
-                
-                if (!respuesta.ok) {
-                    throw new Error(`Error de servidor: ${respuesta.status}`);
-                }
+                const respuesta = await fetch(`https://db-tfg.onrender.com/scores?nivel=${nivelActivo}`);
+                if (!respuesta.ok) throw new Error(`Error HTTP: ${respuesta.status}`);
 
                 const puntuaciones = await respuesta.json();
                 const cuerpoTabla = document.getElementById('tabla-puntuaciones');
                 cuerpoTabla.innerHTML = ''; 
 
                 if (puntuaciones.length === 0) {
-                    cuerpoTabla.innerHTML = '<tr><td colspan="5">No hay puntuaciones registradas para este nivel.</td></tr>';
+                    cuerpoTabla.innerHTML = '<tr><td colspan="5" style="padding: 20px;">No hay registros históricos en este nivel todavía.</td></tr>';
                     return;
                 }
 
@@ -108,33 +196,56 @@
                     if (indice === 1) claseMedalla = 'silver';  
                     if (indice === 2) claseMedalla = 'bronze';  
 
-                    const numMonedas = partida.monedas !== undefined ? partida.monedas : 0;
-                    
-                    // 3. Mapeamos la variable actualizada 'nivel'
-                    const maxNivel = partida.nivel || 'Ninguno'; 
+                    const monedas = partida.monedas !== undefined ? partida.monedas : 0;
+                    const nombreNivel = partida.nivel || 'Ninguno';
 
                     const fila = `
                         <tr class="${claseMedalla}">
                             <td>#${indice + 1}</td>
                             <td>${partida.playerName || 'Anónimo'}</td>
                             <td>${partida.score || 0} <small>PT</small></td>
-                            <td>${numMonedas} <span class="coin-icon">🪙</span></td>
-                            <td><strong>${maxNivel}</strong></td>
+                            <td>${monedas}<span class="coin-icon">🪙</span></td>
+                            <td><strong>${nombreNivel}</strong></td>
                         </tr>
                     `;
                     cuerpoTabla.innerHTML += fila;
                 });
 
             } catch (error) {
-                console.error("Error al cargar el ranking:", error);
+                console.error("Error al conectar con Render:", error);
                 document.getElementById('tabla-puntuaciones').innerHTML = 
-                    '<tr><td colspan="5" style="color: #f38ba8; font-weight: bold; padding: 20px;">❌ Error al conectar con el servidor.</td></tr>';
+                    '<tr><td colspan="5" style="color: #f38ba8; font-weight: bold; padding: 20px;">❌ Error al sincronizar con el flujo temporal del servidor.</td></tr>';
             }
         }
 
-        // Ejecución inicial y refresco automático cada 3 segundos
-        cargarRanking();
-        setInterval(cargarRanking, 3000);
+        // Se ejecuta al pulsar un botón del lobby
+        function seleccionarNivel(idNivel, stringVisual) {
+            nivelActivo = idNivel;
+            document.getElementById('ranking-subtitle').innerText = stringVisual;
+
+            // Transición de pantallas
+            document.getElementById('lobby-screen').style.display = 'none';
+            document.getElementById('ranking-screen').style.display = 'flex';
+
+            // Carga inmediata y configuración del refresco en bucle cada 3s
+            cargarDatosRanking();
+            intervaloActual = setInterval(cargarDatosRanking, 3000);
+        }
+
+        // Se ejecuta al regresar al menú principal
+        function regresarAlLobby() {
+            nivelActivo = '';
+            
+            // Limpiar el bucle para ahorrar recursos del navegador
+            if (intervaloActual) {
+                clearInterval(intervaloActual);
+                intervaloActual = null;
+            }
+
+            // Cambiar visibilidad de vuelta
+            document.getElementById('ranking-screen').style.display = 'none';
+            document.getElementById('lobby-screen').style.display = 'block';
+        }
     </script>
 </body>
 </html>

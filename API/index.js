@@ -9,19 +9,18 @@ const app = express();
 const MONGO_URI = "mongodb+srv://saizviecodavid_db_user:Salir@ttkj.ccpghia.mongodb.net/?appName=TTKJ";
 
 mongoose.connect(MONGO_URI)
-    .then(() => console.log('🟢 ¡Conectado con éxito a MongoDB Atlas!'))
-    .catch(err => console.error('🔴 Error crítico al conectar a MongoDB:', err));
+    .then(() => console.log('🟢 Conectado con éxito a MongoDB Atlas!'))
+    .catch(err => console.error('🔴 Error al conectar a MongoDB:', err));
 
 app.use(cors());
 app.use(express.json());
 
-// 📌 RUTA GET: Lee el filtro '?nivel=...' que le mande la web
+// 📌 RUTA GET: Devuelve el Top 10 filtrado por el parámetro '?nivel='
 app.get('/scores', async (req, res) => {
     try {
         const nivelSolicitado = req.query.nivel;
         let filtro = {};
         
-        // Si la web nos pide un nivel concreto (ej: ?nivel=nivel1), filtramos en Mongo
         if (nivelSolicitado) {
             filtro = { nivel: nivelSolicitado };
         }
@@ -34,26 +33,26 @@ app.get('/scores', async (req, res) => {
     }
 });
 
-// 📌 RUTA POST: Recibe los datos de Unity con la variable 'nivel'
+// 📌 RUTA POST: Recibe las puntuaciones de Unity al finalizar un nivel
 app.post('/scores', async (req, res) => {
     try {
         const newScore = new Score({
             playerName: req.body.playerName,
             score: req.body.score,
             monedas: req.body.monedas || 0,
-            nivel: req.body.nivel || "Ninguno" // 👈 Lee 'nivel' desde el JSON enviado por Unity
+            nivel: req.body.nivel || "Ninguno"
         });
         
         const savedScore = await newScore.save();
-        console.log(`✨ ¡Registro guardado!: ${savedScore.playerName} | ${savedScore.score} PT | Nivel: ${savedScore.nivel}`);
+        console.log(`✨ Registro guardado: ${savedScore.playerName} | ${savedScore.score} PT | Nivel: ${savedScore.nivel}`);
         res.status(201).json(savedScore); 
     } catch (error) {
-        console.error('🔴 Error crítico al guardar la puntuación desde Unity:', error);
+        console.error('🔴 Error al guardar la puntuación desde Unity:', error);
         res.status(500).json({ error: 'Error al guardar la puntuación' });
     }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor backend escuchando activamente en el puerto ${PORT}`);
+    console.log(`🚀 Servidor backend escuchando en el puerto ${PORT}`);
 });
