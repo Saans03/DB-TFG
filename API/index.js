@@ -7,7 +7,7 @@ const PlayerProgress =
 
 const app = express();
 
-// 🔌 CONEXIÓN A MONGO DB ATLAS
+// CONEXIÓN A MONGO DB ATLAS
 const MONGO_URI = "mongodb+srv://saizviecodavid_db_user:Salir@ttkj.ccpghia.mongodb.net/?appName=TTKJ";
 
 mongoose.connect(MONGO_URI)
@@ -17,7 +17,7 @@ mongoose.connect(MONGO_URI)
 app.use(cors());
 app.use(express.json());
 
-// 📌 RUTA GET: Devuelve el Top 10 filtrado por el parámetro '?nivel='
+// RUTA GET: Devuelve el Top 10 filtrado por el parámetro '?nivel='
 app.get('/scores', async (req, res) => {
     try {
         const nivelSolicitado = req.query.nivel;
@@ -35,7 +35,7 @@ app.get('/scores', async (req, res) => {
     }
 });
 
-// 📌 RUTA POST: Recibe las puntuaciones de Unity al finalizar un nivel
+// RUTA POST: Recibe las puntuaciones de Unity al finalizar un nivel
 app.post('/scores', async (req, res) => {
     try {
         const newScore = new Score({
@@ -53,44 +53,7 @@ app.post('/scores', async (req, res) => {
         res.status(500).json({ error: 'Error al guardar la puntuación' });
     }
 });
-
-// 📌 CARGAR PROGRESO
-app.get('/progress/:saveId',
-    async (req, res) => {
-
-        try {
-
-            const progress =
-                await PlayerProgress.findOne({
-
-                    saveId:
-                        req.params.saveId
-
-                });
-
-            if (!progress) {
-                return res.status(404).json({
-                    error:
-                        'Save no encontrado'
-                });
-            }
-
-            res.status(200).json(progress);
-
-        }
-        catch (error) {
-            console.error(
-                '🔴 Error cargando progreso:',
-                error
-            );
-
-            res.status(500).json({
-                error:
-                    'Error al cargar progreso'
-            });
-        }
-    });
-// 📌 GUARDAR PROGRESO
+// GUARDAR PROGRESO
 app.post('/progress/save',
     async (req, res) => {
 
@@ -143,6 +106,86 @@ app.post('/progress/save',
             res.status(500).json({
                 error:
                     'Error al guardar progreso'
+            });
+        }
+    });
+// CARGAR PROGRESO
+app.get('/progress/:saveId',
+    async (req, res) => {
+
+        try {
+
+            const progress =
+                await PlayerProgress.findOne({
+
+                    saveId:
+                        req.params.saveId
+
+                });
+
+            if (!progress) {
+                return res.status(404).json({
+                    error:
+                        'Save no encontrado'
+                });
+            }
+
+            res.status(200).json(progress);
+
+        }
+        catch (error) {
+            console.error(
+                '🔴 Error cargando progreso:',
+                error
+            );
+
+            res.status(500).json({
+                error:
+                    'Error al cargar progreso'
+            });
+        }
+    });
+
+// BORRAR PROGRESO
+app.delete('/progress/:saveId',
+    async (req, res) => {
+
+        try {
+
+            const deleted =
+                await PlayerProgress.findOneAndDelete({
+
+                    saveId:
+                        req.params.saveId
+
+                });
+
+            if (!deleted) {
+                return res.status(404).json({
+                    error:
+                        'Save no encontrado'
+                });
+            }
+
+            console.log(
+                `🗑 Save borrado: ${req.params.saveId}`
+            );
+
+            res.status(200).json({
+                message:
+                    'Save eliminado'
+            });
+
+        }
+        catch (error) {
+            console.error(
+                '🔴 Error borrando save:',
+                error
+            );
+
+            res.status(500).json({
+                error:
+                    'Error eliminando save'
             });
         }
     });
